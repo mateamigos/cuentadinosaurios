@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mundo Dinosaurio: Desafío Numérico</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(180deg, #1e3d2f 0%, #2d5a45 40%, #3b7a5c 80%, #19382b 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      max-height: 100vh;
+      margin: 0;
+      padding: 10px;
+      font-family: 'Quicksand', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .game-container {
+      width: 100%;
+      max-width: 650px;
+      height: 95vh;
+      max-height: 700px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 3px solid rgba(255, 215, 0, 0.4);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    /* MODALES DE INICIO Y FINAL */
+    .modal-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      gap: 16px;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .modal-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.3rem;
+      color: #FFD166;
+      text-shadow: 3px 3px 0 #1b4332, -2px -2px 0 #000;
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .modal-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 22px;
+      border: 3px solid #FFB703;
+      color: #1b263b;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      max-width: 480px;
+    }
+
+    .modal-card p {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.5;
+      margin: 8px 0;
+      color: #2d3748;
+    }
+
+    .btn-start {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.45rem;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #FFB703 0%, #FB8500 100%);
+      color: #1a1a1a;
+      border: 3px solid #FFF;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #B15E00, 0 10px 20px rgba(0,0,0,0.3);
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      filter: brightness(1.1);
+    }
+
+    .btn-start:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #B15E00;
+    }
+
+    /* BARRAS DE ESTADO */
+    .header-bar {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95rem;
+      padding: 6px 14px;
+      border-radius: 12px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      text-transform: uppercase;
+    }
+
+    .level-badge {
+      background-color: #E76F51;
+      color: white;
+      border: 2px solid #FFF;
+    }
+
+    .score-badge {
+      background-color: #FFB703;
+      color: #1b263b;
+      border: 2px solid #FFF;
+    }
+
+    .instruction-text {
+      color: #FEFAE0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: center;
+      margin: 4px 0;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.35);
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ÁREA VISUAL CON DINOSAURIOS BONITOS SVG */
+    .dino-display {
+      background: linear-gradient(135deg, #ffffff 0%, #f4f9f4 100%);
+      border: 4px solid #FFD166;
+      border-radius: 22px;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.35);
+      max-height: 330px;
+      overflow: hidden;
+    }
+
+    .dino-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dino-item svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.18));
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* OPCIONES DE RESPUESTA */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .option-btn {
+      background: linear-gradient(135deg, #2a5235 0%, #17331f 100%);
+      border: 3px solid #84a98c;
+      border-radius: 18px;
+      padding: 16px 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.45rem;
+      color: #FEFAE0;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #0f2315, 0 6px 10px rgba(0,0,0,0.3);
+      transition: all 0.12s ease;
+      text-align: center;
+    }
+
+    .option-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #356743 0%, #1f4229 100%);
+      border-color: #FFD166;
+    }
+
+    .option-btn.correct {
+      background: #52b788 !important;
+      border-color: #FFF !important;
+      color: white !important;
+      box-shadow: 0 5px 0 #1b4332 !important;
+      transform: scale(1.02);
+    }
+
+    .option-btn.wrong {
+      background: #e63946 !important;
+      border-color: #ffb703 !important;
+      color: white !important;
+      animation: wrongShake 0.4s ease-in-out;
+    }
+
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+
+    <!-- PANTALLA INICIAL (EXPLICACIÓN) -->
+    <div class="modal-screen" id="start-screen">
+      <h1 class="modal-title">🦖 MUNDO DINOSAURIO 🦕</h1>
+      <div class="modal-card">
+        <p>👋 <strong>¡Hola pequeño explorador!</strong></p>
+        <p>Cuenta los simpáticos dinosaurios que aparecen en pantalla y elige la respuesta correcta.</p>
+        <p>🎯 El juego tiene <strong>30 pantallas</strong> y avanzará <strong>automáticamente</strong> al acertar.</p>
+        <p>¿Listo para empezar?</p>
+      </div>
+      <button class="btn-start" onclick="startGame()">¡EMPEZAR AVENTURA! 🌋</button>
+    </div>
+
+    <!-- PANTALLA JUEGO (30 PANTALLAS CON AVANCE AUTOMÁTICO) -->
+    <div id="game-screen" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between; align-items: center;">
+      <div class="header-bar">
+        <div class="badge level-badge" id="level-indicator">PANTALLA 1 / 30</div>
+        <div class="badge score-badge">🦴 PUNTOS: <span id="score">0</span></div>
+      </div>
+
+      <div class="instruction-text" id="instruction">💡 Cuenta los dinosaurios 💡</div>
+
+      <!-- Área con Ilustraciones de Dinosaurios Bonitos -->
+      <div class="dino-display" id="dino-display"></div>
+
+      <!-- Botones de Opción Múltiple -->
+      <div class="options-grid" id="options-grid"></div>
+    </div>
+
+    <!-- PANTALLA FINAL (FELICITACIÓN) -->
+    <div class="modal-screen" id="end-screen" style="display: none;">
+      <h1 class="modal-title">🏆 ¡ENHORABUENA! 🏆</h1>
+      <div class="modal-card">
+        <p style="font-size: 1.3rem; color: #d97706;">🌟 ¡COMPLETADO CON ÉXITO! 🌟</p>
+        <p>¡Eres un súper experto contando dinosaurios!</p>
+        <p style="font-size: 1.25rem; margin-top: 10px;">Puntuación Final: <strong id="final-score" style="color: #2b6cb0;">300</strong> Puntos</p>
+      </div>
+      <button class="btn-start" onclick="startGame()">🔄 JUGAR DE NUEVO</button>
+    </div>
+
+  </div>
+
+  <script>
+    // SVGs de Dinosaurios estilo Caricatura/Kawaii (Lindos, coloridos y con cara alegre)
+    const dinoSVGs = [
+      // 1. T-Rex Lindo (Verde Lima)
+      `<svg viewBox="0 0 100 100">
+        <!-- Cuerpo -->
+        <path d="M 25 80 C 20 60 30 40 45 35 C 45 20 60 12 78 16 C 88 18 92 28 85 35 C 80 40 75 42 68 44 C 62 58 60 70 55 82 Z" fill="#70e000" stroke="#38b000" stroke-width="2.5"/>
+        <!-- Barriga -->
+        <path d="M 40 50 C 45 42 58 45 54 68 C 50 78 40 80 40 50 Z" fill="#ccff33"/>
+        <!-- Mejiila Sonrosada -->
+        <circle cx="72" cy="28" r="4.5" fill="#ff85a2" opacity="0.6"/>
+        <!-- Ojo Kawaii -->
+        <circle cx="76" cy="22" r="5" fill="#1b4332"/>
+        <circle cx="78" cy="20" r="1.8" fill="#ffffff"/>
+        <!-- Sonrisa y dientecito -->
+        <path d="M 76 31 Q 82 31 84 27" stroke="#1b4332" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <polygon points="79,29 82,29 80.5,33" fill="#ffffff"/>
+        <!-- Manitas lindas -->
+        <path d="M 58 46 Q 64 47 62 51 M 58 48 Q 63 50 61 54" stroke="#38b000" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <!-- Pies -->
+        <ellipse cx="32" cy="83" rx="8" ry="4" fill="#38b000"/>
+        <ellipse cx="53" cy="84" rx="8" ry="4" fill="#38b000"/>
+      </svg>`,
+
+      // 2. Baby Brachiosaurio (Azul Cielo)
+      `<svg viewBox="0 0 100 100">
+        <!-- Cuerpo y cuello -->
+        <path d="M 15 82 C 15 70 28 60 40 58 C 44 40 46 22 52 10 C 58 5 68 8 72 14 C 74 20 64 28 58 48 C 68 50 82 58 84 72 C 86 82 75 84 65 84 L 25 84 Z" fill="#4895ef" stroke="#4361ee" stroke-width="2.5"/>
+        <!-- Barriguita suave -->
+        <path d="M 32 65 C 40 60 55 62 55 78 L 28 78 Z" fill="#b3e5fc" opacity="0.8"/>
+        <!-- Manchas en la espalda -->
+        <circle cx="66" cy="62" r="3.5" fill="#3f37c9" opacity="0.3"/>
+        <circle cx="74" cy="68" r="2.5" fill="#3f37c9" opacity="0.3"/>
+        <!-- Mejilla -->
+        <circle cx="61" cy="18" r="3.5" fill="#ff85a2" opacity="0.6"/>
+        <!-- Ojo Kawaii -->
+        <circle cx="65" cy="14" r="4" fill="#10002b"/>
+        <circle cx="66.5" cy="12.5" r="1.5" fill="#ffffff"/>
+        <!-- Sonrisa -->
+        <path d="M 64 20 Q 68 22 70 19" stroke="#10002b" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <!-- Patitas regordetas -->
+        <rect x="24" y="78" width="9" height="9" rx="4" fill="#3f37c9"/>
+        <rect x="54" y="78" width="9" height="9" rx="4" fill="#3f37c9"/>
+      </svg>`,
+
+      // 3. Triceratops Alegre (Rosa Coral)
+      `<svg viewBox="0 0 100 100">
+        <!-- Cresta/Corona de la cabeza -->
+        <path d="M 45 28 C 45 15 78 15 80 38 Z" fill="#ff70a6" stroke="#f72585" stroke-width="2"/>
+        <!-- Cuerpo -->
+        <path d="M 15 78 C 18 55 35 45 55 45 C 72 45 82 58 80 78 Z" fill="#ff9770" stroke="#f72585" stroke-width="2.5"/>
+        <!-- Cuernos amarillos lindos -->
+        <path d="M 60 26 L 68 14 M 72 32 L 82 22" stroke="#ffde59" stroke-width="4" stroke-linecap="round"/>
+        <path d="M 78 48 L 86 46" stroke="#ffde59" stroke-width="3" stroke-linecap="round"/>
+        <!-- Mejilla -->
+        <circle cx="65" cy="42" r="4" fill="#ff477e" opacity="0.5"/>
+        <!-- Ojo Kawaii -->
+        <circle cx="68" cy="36" r="4.5" fill="#2b2d42"/>
+        <circle cx="69.5" cy="34.5" r="1.6" fill="#ffffff"/>
+        <!-- Hocico/Boca -->
+        <path d="M 74 44 Q 78 45 77 41" stroke="#2b2d42" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Patitas -->
+        <ellipse cx="30" cy="80" rx="7" ry="5" fill="#f72585"/>
+        <ellipse cx="60" cy="80" rx="7" ry="5" fill="#f72585"/>
+      </svg>`,
+
+      // 4. Estegosaurio Sonriente (Amarillo Sol)
+      `<svg viewBox="0 0 100 100">
+        <!-- Placas de la espalda (Corazones/Hojas de colores) -->
+        <path d="M 28 42 Q 32 24 38 40" fill="#ff477e" stroke="#d62828" stroke-width="2"/>
+        <path d="M 42 36 Q 48 16 54 34" fill="#06d6a0" stroke="#0f9f90" stroke-width="2"/>
+        <path d="M 58 36 Q 64 18 70 38" fill="#118ab2" stroke="#073b4c" stroke-width="2"/>
+        <!-- Cuerpo redondeado -->
+        <path d="M 12 72 Q 25 44 52 42 Q 78 44 86 62 Q 88 74 72 76 L 22 76 Z" fill="#ffd166" stroke="#f77f00" stroke-width="2.5"/>
+        <!-- Mejilla sonrosada -->
+        <circle cx="75" cy="58" r="3.5" fill="#ff70a6" opacity="0.7"/>
+        <!-- Ojo Kawaii -->
+        <circle cx="78" cy="52" r="4" fill="#073b4c"/>
+        <circle cx="79.5" cy="50.5" r="1.5" fill="#ffffff"/>
+        <!-- Sonrisa -->
+        <path d="M 76 60 Q 80 62 82 59" stroke="#073b4c" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <!-- Patitas -->
+        <rect x="28" y="72" width="8" height="8" rx="4" fill="#f77f00"/>
+        <rect x="56" y="72" width="8" height="8" rx="4" fill="#f77f00"/>
+      </svg>`,
+
+      // 5. Pterodáctilo Coqueto (Violeta / Purpura)
+      `<svg viewBox="0 0 100 100">
+        <!-- Alas desplegadas suaves -->
+        <path d="M 50 48 Q 20 25 8 40 Q 30 55 45 60 Z" fill="#c77dff" stroke="#7b2cbf" stroke-width="2"/>
+        <path d="M 50 48 Q 80 25 92 40 Q 70 55 55 60 Z" fill="#c77dff" stroke="#7b2cbf" stroke-width="2"/>
+        <!-- Cabeza y Cresta -->
+        <path d="M 50 55 C 42 55 40 30 46 20 C 52 28 58 32 58 55 Z" fill="#e0aaff" stroke="#7b2cbf" stroke-width="2"/>
+        <!-- Mejillas -->
+        <circle cx="45" cy="38" r="3" fill="#ff85a2"/>
+        <circle cx="53" cy="38" r="3" fill="#ff85a2"/>
+        <!-- Ojos brillantes -->
+        <circle cx="46" cy="32" r="3.5" fill="#10002b"/>
+        <circle cx="47" cy="31" r="1.2" fill="#fff"/>
+        <circle cx="54" cy="32" r="3.5" fill="#10002b"/>
+        <circle cx="55" cy="31" r="1.2" fill="#fff"/>
+        <!-- Piquito sonriente -->
+        <polygon points="47,42 53,42 50,49" fill="#ffb703"/>
+      </svg>`
+    ];
+
+    const baseData = [
+      { id: 1, num: "1", word: "Uno" },
+      { id: 2, num: "2", word: "Dos" },
+      { id: 3, num: "3", word: "Tres" },
+      { id: 4, num: "4", word: "Cuatro" },
+      { id: 5, num: "5", word: "Cinco" },
+      { id: 6, num: "6", word: "Seis" },
+      { id: 7, num: "7", word: "Siete" },
+      { id: 8, num: "8", word: "Ocho" },
+      { id: 9, num: "9", word: "Nueve" },
+      { id: 10, num: "10", word: "Diez" }
+    ];
+
+    let currentScreen = 1;
+    let score = 0;
+    let currentItem = null;
+    let canAnswer = true;
+
+    function shuffle(array) {
+      return array
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+    }
+
+    function startGame() {
+      score = 0;
+      currentScreen = 1;
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('end-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      renderScreen();
+    }
+
+    function renderScreen() {
+      canAnswer = true;
+      document.getElementById('score').textContent = score;
+      document.getElementById('level-indicator').textContent = `PANTALLA ${currentScreen} / 30`;
+
+      // Seleccionar cantidad aleatoria entre 1 y 10
+      const randomCount = Math.floor(Math.random() * 10) + 1;
+      currentItem = baseData.find(d => d.id === randomCount);
+
+      // Rotar el diseño del dinosaurio bonito en cada pantalla
+      const selectedSVG = dinoSVGs[(currentScreen - 1) % dinoSVGs.length];
+
+      const display = document.getElementById('dino-display');
+      display.innerHTML = '';
+      
+      // Ajustar dimensiones según la cantidad en pantalla
+      let dinoSize = 95;
+      if (randomCount > 4) dinoSize = 78;
+      if (randomCount > 7) dinoSize = 64;
+
+      for (let i = 0; i < randomCount; i++) {
+        const dinoDiv = document.createElement('div');
+        dinoDiv.className = 'dino-item';
+        dinoDiv.style.width = `${dinoSize}px`;
+        dinoDiv.style.height = `${dinoSize}px`;
+        dinoDiv.innerHTML = selectedSVG;
+        display.appendChild(dinoDiv);
+      }
+
+      // Alternar tipo de respuesta: Cifra (impares) o Palabra (pares)
+      const instruction = document.getElementById('instruction');
+      const isNumberMode = (currentScreen % 2 !== 0);
+
+      if (isNumberMode) {
+        instruction.textContent = "💡 Cuenta los dinosaurios y elige la CIFRA correcta 💡";
+      } else {
+        instruction.textContent = "💡 Cuenta los dinosaurios y elige la PALABRA correcta 💡";
+      }
+
+      // Generar 4 opciones únicas (1 Correcta + 3 Distractores)
+      const distractors = shuffle(baseData.filter(x => x.id !== currentItem.id)).slice(0, 3);
+      const options = shuffle([currentItem, ...distractors]);
+
+      const optionsGrid = document.getElementById('options-grid');
+      optionsGrid.innerHTML = '';
+
+      const optionKey = isNumberMode ? 'num' : 'word';
+
+      options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.textContent = opt[optionKey];
+        btn.onclick = () => handleAnswer(btn, opt.id === currentItem.id);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(btn, isCorrect) {
+      if (!canAnswer) return;
+
+      if (isCorrect) {
+        canAnswer = false;
+        btn.classList.add('correct');
+        score += 10;
+        document.getElementById('score').textContent = score;
+
+        // PASO AUTOMÁTICO A LA SIGUIENTE PANTALLA
+        setTimeout(() => {
+          currentScreen++;
+          if (currentScreen > 30) {
+            showEndScreen();
+          } else {
+            renderScreen();
+          }
+        }, 550);
+
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => {
+          btn.classList.remove('wrong');
+        }, 500);
+      }
+    }
+
+    function showEndScreen() {
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('end-screen').style.display = 'flex';
+      document.getElementById('final-score').textContent = score;
+    }
+  </script>
+</body>
+</html>
